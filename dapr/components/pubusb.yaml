@@ -1,13 +1,13 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: pubsub
+  name: demo.pubsub
   namespace: default
 spec:
   type: pubsub.redis
   version: v1
   metadata:
   - name: redisHost
-    value: 192.168.2.10:6379
+    value: 192.168.1.10:6379
   - name: redisPassword
     value: ""

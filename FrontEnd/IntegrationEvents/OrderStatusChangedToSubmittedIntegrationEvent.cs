@@ -1,4 +1,4 @@
-﻿using Microsoft.eShopOnDapr.BuildingBlocks.EventBus.Events;
+﻿using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Events;
 
 namespace FrontEnd.IntegrationEvents;
 

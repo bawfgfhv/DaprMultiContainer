@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Net;
 using Dapr;
 using BackEnd.IntegrationEvents;
+using System.Text.Json;
 
 namespace BackEnd.Controllers
 {
@@ -16,7 +17,7 @@ namespace BackEnd.Controllers
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private const string DAPR_PUBSUB_NAME = "eshopondapr-pubsub";
+        private const string DAPR_PUBSUB_NAME = "demo.pubsub";
         private readonly ILogger<WeatherForecastController> _logger;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
@@ -51,9 +52,11 @@ namespace BackEnd.Controllers
         [Topic(DAPR_PUBSUB_NAME, "OrderStatusChangedToSubmittedIntegrationEvent")]
         public async Task HandleAsync(OrderStatusChangedToSubmittedIntegrationEvent integrationEvent)
         {
+            var ips = GetIp();
+            Console.WriteLine(ips.FirstOrDefault());
             if (integrationEvent.Id != Guid.Empty)
             {
-               Console.WriteLine(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(integrationEvent));
+                Console.WriteLine(JsonSerializer.Serialize(integrationEvent));
             }
             else
             {

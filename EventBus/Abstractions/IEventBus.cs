@@ -1,4 +1,6 @@
-﻿namespace Microsoft.eShopOnDapr.BuildingBlocks.EventBus.Abstractions;
+﻿using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Events;
+
+namespace Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
 
 public interface IEventBus
 {

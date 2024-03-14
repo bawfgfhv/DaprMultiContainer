@@ -1,8 +1,11 @@
+using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
+using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Events;
+
 namespace Microsoft.eShopOnDapr.BuildingBlocks.EventBus;
 
 public class DaprEventBus : IEventBus
 {
-    private const string PubSubName = "eshopondapr-pubsub";
+    private const string PubSubName = "demo.pubsub";
 
     private readonly DaprClient _dapr;
     private readonly ILogger _logger;

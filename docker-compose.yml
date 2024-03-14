@@ -10,7 +10,16 @@ services:
       - "51000:50001"
   frontend-dapr:
     image: "daprio/daprd:latest"
-    command: [ "./daprd", "-app-id", "FrontEnd", "-app-port", "8080"  , "-components-path", "/components" ]
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "FrontEnd",
+        "-app-port",
+        "8080",
+        "-components-path",
+        "/components"
+      ]
     depends_on:
       - frontend
     network_mode: "service:frontend"
@@ -21,13 +30,29 @@ services:
     build:
       context: .
       dockerfile: BackEnd/Dockerfile
-    ports:
-      - "52000:50001"
+    deploy:
+      replicas: 1
+  backend1:
+    image: ${DOCKER_REGISTRY-}backend
+    build:
+      context: .
+      dockerfile: BackEnd/Dockerfile
+
   backend-dapr:
     image: "daprio/daprd:latest"
-    command: [ "./daprd", "-app-id", "BackEnd", "-app-port", "8080", "-components-path", "/components" ]
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "BackEnd",
+        "-app-port",
+        "8080",
+        "-components-path",
+        "/components"
+      ]
     depends_on:
       - backend
+      - backend1
     network_mode: "service:backend"
     volumes:
       - "./dapr/components/:/components"
