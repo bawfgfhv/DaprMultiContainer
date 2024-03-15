@@ -1,6 +1,6 @@
 ﻿using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Events;
 
-namespace Microsoft.eShopOnDapr.BuildingBlocks.EventBus.Abstractions;
+namespace Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
 
 public interface IIntegrationEventHandler<in TIntegrationEvent> : IIntegrationEventHandler
     where TIntegrationEvent : IntegrationEvent

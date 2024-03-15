@@ -1,5 +1,4 @@
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
-using Microsoft.eShopOnDapr.BuildingBlocks.EventBus.Abstractions;
 using Microsoft.eShopOnDapr.BuildingBlocks.EventBus;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,15 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>6c9bde5b-8cbb-4c18-a426-17b82069385c</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <PublishAot>True</PublishAot>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <Compile Remove="Controllers\User\**" />
+    <Content Remove="Controllers\User\**" />
+    <EmbeddedResource Remove="Controllers\User\**" />
+    <None Remove="Controllers\User\**" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Controllers\User\UserFilterValidationAttribute.cs" />
+    <Compile Include="Controllers\User\ValidationTestController.cs" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapr.AspNetCore" Version="1.13.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventBus\EventBus.csproj" />
+  </ItemGroup>
+
 </Project>

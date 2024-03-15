@@ -6,7 +6,9 @@
       "serviceActions": {
         "frontend": "StartDebugging",
         "backend": "StartDebugging",
-        "frontend-dapr": "StartWithoutDebugging"
+        "frontend-dapr": "StartWithoutDebugging",
+        "identity": "StartDebugging",
+        "daprsubdemo": "StartDebugging"
       }
     }
   }

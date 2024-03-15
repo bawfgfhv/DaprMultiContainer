@@ -2,7 +2,6 @@ using Dapr.Client;
 using FrontEnd.IntegrationEvents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
-using Microsoft.eShopOnDapr.BuildingBlocks.EventBus.Abstractions;
 
 namespace FrontEnd.Controllers
 {

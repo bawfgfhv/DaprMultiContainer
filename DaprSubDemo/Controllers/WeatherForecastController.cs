@@ -1,23 +1,20 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Net;
-using Dapr;
-using BackEnd.IntegrationEvents;
 using System.Text.Json;
+using Dapr;
+using DaprSubDemo.IntegrationEvents;
+using Microsoft.AspNetCore.Mvc;
 
-namespace BackEnd.Controllers
+namespace DaprSubDemo.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
+        private const string DAPR_PUBSUB_NAME = "demo.pubsub";
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private const string DAPR_PUBSUB_NAME = "demo.pubsub";
         private readonly ILogger<WeatherForecastController> _logger;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
@@ -37,31 +34,10 @@ namespace BackEnd.Controllers
             .ToArray();
         }
 
-        [HttpGet("Ip")]
-        public IEnumerable<string> GetIp()
-        {
-            var ip = NetworkInterface.GetAllNetworkInterfaces().Select(p => p.GetIPProperties())
-                .SelectMany(p => p.UnicastAddresses)
-                .FirstOrDefault(p =>
-                    p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))?.Address
-                .ToString();
-
-            return new List<string>() { ip };
-        }
-
         [Topic(DAPR_PUBSUB_NAME, nameof(OrderStatusChangedToSubmittedIntegrationEvent))]
         public async Task HandleAsync(OrderStatusChangedToSubmittedIntegrationEvent integrationEvent)
         {
-            var ips = GetIp();
-            Console.WriteLine(ips.FirstOrDefault());
-            if (integrationEvent.Id != Guid.Empty)
-            {
-                Console.WriteLine(JsonSerializer.Serialize(integrationEvent));
-            }
-            else
-            {
-                _logger.LogWarning("Invalid IntegrationEvent - RequestId is missing - {@IntegrationEvent}", integrationEvent);
-            }
+            Console.WriteLine(JsonSerializer.Serialize(integrationEvent));
         }
     }
 }

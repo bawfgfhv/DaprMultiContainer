@@ -25,19 +25,12 @@ services:
     network_mode: "service:frontend"
     volumes:
       - "./dapr/components/:/components"
+  
   backend:
     image: ${DOCKER_REGISTRY-}backend
     build:
       context: .
       dockerfile: BackEnd/Dockerfile
-    deploy:
-      replicas: 1
-  backend1:
-    image: ${DOCKER_REGISTRY-}backend
-    build:
-      context: .
-      dockerfile: BackEnd/Dockerfile
-
   backend-dapr:
     image: "daprio/daprd:latest"
     command:
@@ -52,7 +45,77 @@ services:
       ]
     depends_on:
       - backend
-      - backend1
     network_mode: "service:backend"
     volumes:
       - "./dapr/components/:/components"
+
+  backend1:
+    image: ${DOCKER_REGISTRY-}backend
+    build:
+      context: .
+      dockerfile: BackEnd/Dockerfile
+  backend1-dapr:
+    image: "daprio/daprd:latest"
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "BackEnd",
+        "-app-port",
+        "8080",
+        "-components-path",
+        "/components"
+      ]
+    depends_on:
+      - backend1
+    network_mode: "service:backend1"
+    volumes:
+      - "./dapr/components/:/components"
+
+  identity:
+    image: ${DOCKER_REGISTRY-}identity
+    build:
+      context: .
+      dockerfile: Identity/Dockerfile
+  identity-dapr:
+    image: "daprio/daprd:latest"
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "identity",
+        "-app-port",
+        "8080",
+        "-components-path",
+        "/components"
+      ]
+    depends_on:
+      - identity
+    network_mode: "service:identity"
+    volumes:
+      - "./dapr/components/:/components"
+
+  daprsubdemo:
+    image: ${DOCKER_REGISTRY-}daprsubdemo
+    build:
+      context: .
+      dockerfile: DaprSubDemo/Dockerfile
+
+  daprsubdemo-dapr:
+    image: "daprio/daprd:latest"
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "daprsubdemo",
+        "-app-port",
+        "8080",
+        "-components-path",
+        "/components"
+      ]
+    depends_on:
+      - daprsubdemo
+    network_mode: "service:daprsubdemo"
+    volumes:
+      - "./dapr/components/:/components"
+
