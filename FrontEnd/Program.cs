@@ -1,3 +1,7 @@
+using FrontEnd.Infrastructure.Repositories;
+using FrontEnd.IntegrationEvents.EventHandling;
+using FrontEnd.Model;
+using FrontEnd.Services;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
 using Microsoft.eShopOnDapr.BuildingBlocks.EventBus;
 
@@ -9,7 +13,13 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IEventBus, DaprEventBus>();
+
+builder.Services.AddScoped<IEventBus, DaprEventBus>();
+builder.Services.AddScoped<OrderStatusChangedToSubmittedIntegrationEventHandler>();
+
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddScoped<IBasketRepository, DaprBasketRepository>();
+builder.Services.AddScoped<IIdentityService, IdentityService>();
 
 var app = builder.Build();
 

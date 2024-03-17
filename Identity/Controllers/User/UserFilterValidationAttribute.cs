@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Identity.Controllers.User
 {
+    /// <inheritdoc />
     public class UserFilterValidationAttribute : ValidationAttribute
     {
         protected override ValidationResult IsValid(object? value, ValidationContext validationContext)

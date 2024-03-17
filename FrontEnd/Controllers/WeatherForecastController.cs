@@ -1,7 +1,10 @@
 using Dapr.Client;
 using FrontEnd.IntegrationEvents;
+using FrontEnd.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
+using System.Net;
+using FrontEnd.Services;
 
 namespace FrontEnd.Controllers
 {
@@ -12,11 +15,16 @@ namespace FrontEnd.Controllers
 
         private readonly DaprClient _daprClient;
         private readonly IEventBus _eventBus;
+        private readonly IBasketRepository _basketRepository;
+        private readonly IIdentityService _identityService;
 
-        public WeatherForecastController(DaprClient daprClient, IEventBus eventBus)
+        /// <inheritdoc />
+        public WeatherForecastController(DaprClient daprClient, IEventBus eventBus, IBasketRepository basketRepository, IIdentityService identityService)
         {
             _daprClient = daprClient;
             _eventBus = eventBus;
+            _basketRepository = basketRepository;
+            _identityService = identityService;
         }
 
         [HttpGet("FrontEnd")]
@@ -44,6 +52,17 @@ namespace FrontEnd.Controllers
                 .ConfigureAwait(false);
 
             return Ok("OK");
+        }
+
+        [HttpPost("UpdateBasket")]
+        [ProducesResponseType(typeof(CustomerBasket), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<CustomerBasket>> UpdateBasketAsync([FromBody] CustomerBasket value)
+        {
+            var userId = _identityService.GetUserIdentity();
+
+            value.BuyerId = string.IsNullOrWhiteSpace(userId) ? Guid.NewGuid().ToString("N") : userId;
+
+            return Ok(await _basketRepository.UpdateBasketAsync(value));
         }
     }
 }
