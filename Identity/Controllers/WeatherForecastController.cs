@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Controllers
 {
+    /// <inheritdoc />
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
@@ -18,6 +19,7 @@ namespace Identity.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger;
 
+        /// <inheritdoc />
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;

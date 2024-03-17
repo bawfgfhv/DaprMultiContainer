@@ -23,6 +23,7 @@ namespace Identity.Controllers.User
     }
 
     //接口
+    /// <inheritdoc />
     public class ValidationTestController : ControllerBase
     {
         [HttpPost("Add")]

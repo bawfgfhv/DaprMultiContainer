@@ -1,6 +1,6 @@
 ﻿using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Events;
 
-namespace Identity.IntegrationEvents;
+namespace DaprIdentity.IntegrationEvents;
 
 /// <inheritdoc />
 public record OrderStatusChangedToSubmittedIntegrationEvent(

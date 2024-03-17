@@ -118,3 +118,27 @@ services:
     network_mode: "service:identity"
     volumes:
       - "./dapr/components/:/components"
+
+  dapridentity:
+    image: ${DOCKER_REGISTRY-}dapridentity
+    build:
+      context: .
+      dockerfile: DaprIdentity/Dockerfile
+  dapridentity-dapr:
+    image: "daprio/daprd:latest"
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "dapridentity",
+        "-app-port",
+        "8080",
+        "-components-path",
+        "/components"
+      ]
+    depends_on:
+      - dapridentity
+    network_mode: "service:dapridentity"
+    volumes:
+      - "./dapr/components/:/components"
+

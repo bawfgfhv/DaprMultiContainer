@@ -16,7 +16,8 @@
         "backend1-dapr": "StartWithoutDebugging",
         "backend-dapr": "StartWithoutDebugging",
         "daprsubdemo-dapr": "StartWithoutDebugging",
-        "identity-dapr": "StartWithoutDebugging"
+        "identity-dapr": "StartWithoutDebugging",
+        "dapridentity": "StartDebugging"
       }
     }
   }
