@@ -52,6 +52,8 @@ namespace BackEnd.Controllers
         [Topic(DAPR_PUBSUB_NAME, nameof(OrderStatusChangedToSubmittedIntegrationEvent))]
         public async Task HandleAsync(OrderStatusChangedToSubmittedIntegrationEvent integrationEvent)
         {
+
+            //throw new NotImplementedException("Not OK!");
             var ips = GetIp();
             Console.WriteLine(ips.FirstOrDefault());
             if (integrationEvent.Id != Guid.Empty)

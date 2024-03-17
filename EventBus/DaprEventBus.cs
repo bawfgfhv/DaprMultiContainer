@@ -29,6 +29,7 @@ public class DaprEventBus : IEventBus
         // We need to make sure that we pass the concrete type to PublishEventAsync,
         // which can be accomplished by casting the event to dynamic. This ensures
         // that all event fields are properly serialized.
-        await _dapr.PublishEventAsync(PubSubName, topicName, (object)integrationEvent);
+        await _dapr.PublishEventAsync(PubSubName, topicName, (object)integrationEvent,
+            new Dictionary<string, string> { { "ttl", "10" } });
     }
 }

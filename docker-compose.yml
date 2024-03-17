@@ -72,6 +72,30 @@ services:
     volumes:
       - "./dapr/components/:/components"
 
+  daprsubdemo:
+    image: ${DOCKER_REGISTRY-}daprsubdemo
+    build:
+      context: .
+      dockerfile: DaprSubDemo/Dockerfile
+  daprsubdemo-dapr:
+    image: "daprio/daprd:latest"
+    command:
+      [
+        "./daprd",
+        "-app-id",
+        "daprsubdemo",
+        "-app-port",
+        "8080",
+        "-components-path",
+        "/components"
+      ]
+    depends_on:
+      - daprsubdemo
+    network_mode: "service:daprsubdemo"
+    volumes:
+      - "./dapr/components/:/components"
+
+
   identity:
     image: ${DOCKER_REGISTRY-}identity
     build:
@@ -94,28 +118,3 @@ services:
     network_mode: "service:identity"
     volumes:
       - "./dapr/components/:/components"
-
-  daprsubdemo:
-    image: ${DOCKER_REGISTRY-}daprsubdemo
-    build:
-      context: .
-      dockerfile: DaprSubDemo/Dockerfile
-
-  daprsubdemo-dapr:
-    image: "daprio/daprd:latest"
-    command:
-      [
-        "./daprd",
-        "-app-id",
-        "daprsubdemo",
-        "-app-port",
-        "8080",
-        "-components-path",
-        "/components"
-      ]
-    depends_on:
-      - daprsubdemo
-    network_mode: "service:daprsubdemo"
-    volumes:
-      - "./dapr/components/:/components"
-

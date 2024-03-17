@@ -3,12 +3,20 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "frontend",
+      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/swagger",
       "serviceActions": {
         "frontend": "StartDebugging",
         "backend": "StartDebugging",
         "frontend-dapr": "StartWithoutDebugging",
         "identity": "StartDebugging",
-        "daprsubdemo": "StartDebugging"
+        "daprsubdemo": "StartDebugging",
+        "backend1": "StartDebugging",
+        "backend1-dapr": "StartWithoutDebugging",
+        "backend-dapr": "StartWithoutDebugging",
+        "daprsubdemo-dapr": "StartWithoutDebugging",
+        "identity-dapr": "StartWithoutDebugging"
       }
     }
   }
