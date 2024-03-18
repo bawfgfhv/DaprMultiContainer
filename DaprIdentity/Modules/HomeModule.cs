@@ -2,6 +2,9 @@
 using Carter.ModelBinding;
 using Carter.Request;
 using Carter.Response;
+using Microsoft.AspNetCore.Authentication;
+using OpenIddict.Client.AspNetCore;
+using OpenIddict.Server.AspNetCore;
 
 namespace DaprIdentity.Modules
 {
@@ -10,7 +13,13 @@ namespace DaprIdentity.Modules
         public void AddRoutes(IEndpointRouteBuilder app)
         {
 
-            app.MapGet("/", () => "Hello from Carter!")
+            app.MapGet("/", async (HttpContext context) =>
+                {
+                    var token = await context.GetTokenAsync(
+                        scheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                        tokenName: OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken);
+                    return "Hello from Carter!";
+                })
                 .WithTags("Home")
                 .WithMetadata("meta");
             app.MapGet("/qs", (HttpRequest req) =>

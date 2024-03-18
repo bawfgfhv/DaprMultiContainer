@@ -18,6 +18,8 @@ using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 using Microsoft.AspNetCore.Authorization;
 using OpenIddict.Validation.AspNetCore;
+using Microsoft.AspNetCore.Identity;
+using OpenIddict.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,45 +69,80 @@ builder.Services.AddOpenIddict()
         options.UseEntityFrameworkCore()
                .UseDbContext<ApplicationDbContext>();
     })
-
-    // Register the OpenIddict server components.
     .AddServer(options =>
     {
-        // Enable the authorization, introspection and token endpoints.
-        options.SetAuthorizationEndpointUris("authorize")
-               .SetIntrospectionEndpointUris("introspect")
-               .SetTokenEndpointUris("token");
+        options.SetAuthorizationEndpointUris("api/connect/authorize")
+            .SetIntrospectionEndpointUris("api/connect/introspect")
+            .SetLogoutEndpointUris("api/connect/logout")
+            .SetTokenEndpointUris("api/connect/token");
 
-        // Note: this sample only uses the authorization code and refresh token
-        // flows but you can enable the other flows if you need to support implicit,
-        // password or client credentials.
         options.AllowAuthorizationCodeFlow()
             .AllowRefreshTokenFlow();
 
-        // Register the encryption credentials. This sample uses a symmetric
-        // encryption key that is shared between the server and the Api2 sample
-        // (that performs local token validation instead of using introspection).
-        //
-        // Note: in a real world application, this encryption key should be
-        // stored in a safe place (e.g in Azure KeyVault, stored as a secret).
+        options.AllowPasswordFlow();
+        options.AllowClientCredentialsFlow();
+        options.AcceptAnonymousClients();
+
         options.AddEncryptionKey(new SymmetricSecurityKey(
             Convert.FromBase64String("DRjd/GnduI3Efzen9V9BvbNUfc/VKgXltV7Kbk9sMkY=")));
 
-        // Register the signing credentials.
         options.AddDevelopmentSigningCertificate();
 
-        // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
-        //
-        // Note: unlike other samples, this sample doesn't use token endpoint pass-through
-        // to handle token requests in a custom MVC action. As such, the token requests
-        // will be automatically handled by OpenIddict, that will reuse the identity
-        // resolved from the authorization code to produce access and identity tokens.
-        //
         options.UseAspNetCore()
-            .EnableAuthorizationEndpointPassthrough()
-            .DisableTransportSecurityRequirement(); //禁用传输安全要求
-    })
+            //.EnableAuthorizationEndpointPassthrough()
+            //.EnableTokenEndpointPassthrough()
+            //.EnableLogoutEndpointPassthrough()
+            .DisableTransportSecurityRequirement();
 
+        options.AddEventHandler<OpenIddictServerEvents.HandleTokenRequestContext>(builder =>
+        {
+            builder.UseInlineHandler(context =>
+            {
+                // 检查请求是否包含必要的参数（grant_type、username、password）
+                if (!context.Request.IsPasswordGrantType() ||
+                    !context.Request.HasParameter("username") ||
+                    !context.Request.HasParameter("password"))
+                {
+                    context.Reject(
+                        error: Errors.InvalidRequest,
+                        description: "The mandatory 'grant_type', 'username' and 'password' parameters are missing.");
+
+                    return default;
+                }
+
+                // 获取用户名和密码
+                var username = context.Request.GetParameter("username");
+                var password = context.Request.GetParameter("password");
+
+                // 使用ASP.NET Core Identity验证用户名和密码
+                //var result = await _signInManager.PasswordSignInAsync(username, password, false, lockoutOnFailure: false);
+
+                //if (!result.Succeeded)
+                //{
+                    //context.Reject(
+                    //    error: Errors.InvalidGrant,
+                    //    description: "The username or password is incorrect.");
+
+                    //return default;
+                //}
+
+                // 验证成功，创建和签发access token
+                var identity = new ClaimsIdentity(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, Claims.Name, Claims.Role);
+                identity.AddClaim(Claims.Subject, username.ToString());
+
+                var principal = new ClaimsPrincipal(identity);
+
+                //var ticket = new AuthenticationTicket(principal, properties: null, OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+
+                context.SignIn(principal);
+
+                //context.Validate(ticket);
+                
+
+                return default;
+            });
+        });
+    })
     // Register the OpenIddict validation components.
     .AddValidation(options =>
     {
@@ -161,24 +198,28 @@ await using (var scope = app.Services.CreateAsyncScope())
         {
             await manager.CreateAsync(new OpenIddictApplicationDescriptor
             {
-                ApplicationType = ApplicationTypes.Native,
+                ApplicationType = ApplicationTypes.Web,
                 ClientId = "console_app",
                 ClientType = ClientTypes.Public,
                 RedirectUris =
                 {
-                    new Uri("http://localhost/")
+                    new Uri("http://localhost:5112/")
                 },
                 Permissions =
                 {
                     Permissions.Endpoints.Authorization,
+                    Permissions.Endpoints.Logout,
                     Permissions.Endpoints.Token,
                     Permissions.GrantTypes.AuthorizationCode,
+                    Permissions.GrantTypes.RefreshToken,
                     Permissions.ResponseTypes.Code,
+                    Permissions.GrantTypes.Password,
                     Permissions.Scopes.Email,
                     Permissions.Scopes.Profile,
                     Permissions.Scopes.Roles,
                     Permissions.Prefixes.Scope + "api1",
-                    Permissions.Prefixes.Scope + "api2"
+                    Permissions.Prefixes.Scope + "api2",
+                    Permissions.Prefixes.Scope + "TenantId"
                 }
             });
         }
@@ -273,7 +314,7 @@ app.MapCarter();
 app.MapGet("api", [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 (ClaimsPrincipal user) => user.Identity!.Name);
 
-app.MapMethods("authorize", [HttpMethods.Get, HttpMethods.Post], async (HttpContext context, IOpenIddictScopeManager manager) =>
+app.MapMethods("api/connect/authorize", [HttpMethods.Get, HttpMethods.Post], async (HttpContext context, IOpenIddictScopeManager manager) =>
 {
     // Retrieve the OpenIddict server request from the HTTP context.
     var request = context.GetOpenIddictServerRequest();
@@ -327,7 +368,12 @@ app.MapMethods("authorize", [HttpMethods.Get, HttpMethods.Post], async (HttpCont
     // Allow all claims to be added in the access tokens.
     identity.SetDestinations(claim => [Destinations.AccessToken]);
 
-    var result = Results.SignIn(new ClaimsPrincipal(identity), properties: null, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    //var result = Results.SignIn(new ClaimsPrincipal(identity), properties: null, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+    var result = TypedResults.SignIn(new ClaimsPrincipal(identity), properties: null,
+        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+
     return result;
 });
 
