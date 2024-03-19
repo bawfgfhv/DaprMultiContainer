@@ -2,9 +2,15 @@
 using Carter.ModelBinding;
 using Carter.Request;
 using Carter.Response;
+using DaprIdentity.Modules.User;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Routing;
+using OpenIddict.Abstractions;
 using OpenIddict.Client.AspNetCore;
 using OpenIddict.Server.AspNetCore;
+using OpenIddict.Validation.AspNetCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace DaprIdentity.Modules
 {
@@ -13,15 +19,27 @@ namespace DaprIdentity.Modules
         public void AddRoutes(IEndpointRouteBuilder app)
         {
 
-            app.MapGet("/", async (HttpContext context) =>
+            //app.MapGet("/",
+            //        //[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)] 
+            //        async (HttpContext context) =>
+            //        {
+            //            var user = context.User;
+
+            //            return $"Hello {(user.GetClaim(Claims.Subject) ?? "lady gaga")} from Carter!";
+            //        })
+            //    .WithTags("Home")
+            //    .WithMetadata("meta")
+            //    .RequireAuthorization();
+
+            app.MapPost<UserInput>("/", async (HttpContext context, UserInput userInput) =>
                 {
-                    var token = await context.GetTokenAsync(
-                        scheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                        tokenName: OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken);
-                    return "Hello from Carter!";
-                })
-                .WithTags("Home")
-                .WithMetadata("meta");
+                    var user = context.User;
+
+                    return $"Hello {(user.GetClaim(Claims.Subject) ?? "lady gaga")} from Carter!";
+                }).WithTags("Home 嘿嘿嘿嘿")
+                .WithMetadata("meta---- 哈哈哈哈");
+
+
             app.MapGet("/qs", (HttpRequest req) =>
             {
                 var ids = req.Query.AsMultiple<int>("ids");
@@ -29,7 +47,7 @@ namespace DaprIdentity.Modules
             }).WithTags("Home");
 
             app.MapGet("/conneg", (HttpResponse res) => res.Negotiate(new { Name = "Dave" }))
-                .WithTags("Home");
+                .WithTags("Home").WithMetadata(" meta --- data -- 咳咳 ");
 
             app.MapPost("/validation", HandlePost)
                 .WithTags("Home");
@@ -64,6 +82,15 @@ namespace DaprIdentity.Modules
         {
             //你的业务逻辑
             return 1;
+        }
+    }
+
+
+    public static class EndpointRouteBuilderExtends
+    {
+        public static RouteHandlerBuilder Get(this IEndpointRouteBuilder app, string pattern, Delegate handle)
+        {
+            return app.MapGet(pattern, handle).RequireAuthorization();
         }
     }
 }
