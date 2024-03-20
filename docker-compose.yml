@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: FrontEnd/Dockerfile
     ports:
-      - "51000:50001"
+      - "40001:50001"
   frontend-dapr:
     image: "daprio/daprd:latest"
     command:
@@ -95,7 +95,6 @@ services:
     volumes:
       - "./dapr/components/:/components"
 
-
   identity:
     image: ${DOCKER_REGISTRY-}identity
     build:
@@ -140,7 +139,16 @@ services:
       ]
     depends_on:
       - dapridentity
+      - identity-database
     network_mode: "service:dapridentity"
     volumes:
       - "./dapr/components/:/components"
 
+  identity-database:
+    container_name: mssql
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+    - "1433:1433"
+    environment:
+    - SA_PASSWORD=longchi@123
+    - ACCEPT_EULA=Y

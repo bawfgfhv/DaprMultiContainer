@@ -157,7 +157,8 @@ builder.Services.AddOpenIddict()
 #endregion
 
 builder.Services.AddCors();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization()
+    .AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
 
 var app = builder.Build();
 

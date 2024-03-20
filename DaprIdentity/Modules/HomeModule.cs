@@ -15,10 +15,9 @@ namespace DaprIdentity.Modules
 
             app.MapGet("/", async (HttpContext context) =>
                 {
-                    var token = await context.GetTokenAsync(
-                        scheme: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
-                        tokenName: OpenIddictClientAspNetCoreConstants.Tokens.BackchannelAccessToken);
-                    return "Hello from Carter!";
+                    var user = context.User;
+
+                    return $"Hello {user.Identity?.Name ?? "lady gaga"} from Carter!";
                 })
                 .WithTags("Home")
                 .WithMetadata("meta");
