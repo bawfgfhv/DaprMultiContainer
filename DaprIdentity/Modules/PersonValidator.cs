@@ -2,9 +2,9 @@
 
 namespace DaprIdentity.Modules
 {
-    public class PersonValidator : AbstractValidator<Person>
+    public class UserInputValidator : AbstractValidator<Person>
     {
-        public PersonValidator()
+        public UserInputValidator()
         {
             RuleFor(p => p.Name).NotEmpty().WithMessage("Name cannot be empty.");
         }

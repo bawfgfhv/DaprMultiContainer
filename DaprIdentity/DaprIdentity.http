@@ -4,3 +4,7 @@ GET {{DaprIdentity_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{DaprIdentity_HostAddress}}/api
+
+###

@@ -2,15 +2,8 @@
 using Carter.ModelBinding;
 using Carter.Request;
 using Carter.Response;
+using DaprIdentity.Authorization;
 using DaprIdentity.Modules.User;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Routing;
-using OpenIddict.Abstractions;
-using OpenIddict.Client.AspNetCore;
-using OpenIddict.Server.AspNetCore;
-using OpenIddict.Validation.AspNetCore;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace DaprIdentity.Modules
 {
@@ -18,24 +11,18 @@ namespace DaprIdentity.Modules
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
+            app.AppGet(Permissions.UserCreate, (HttpContext context) =>
+            {
+                return TypedResults.Ok(context.User);
+            });
 
-            //app.MapGet("/",
-            //        //[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)] 
-            //        async (HttpContext context) =>
-            //        {
-            //            var user = context.User;
-
-            //            return $"Hello {(user.GetClaim(Claims.Subject) ?? "lady gaga")} from Carter!";
-            //        })
-            //    .WithTags("Home")
-            //    .WithMetadata("meta")
-            //    .RequireAuthorization();
-
-            app.MapPost<UserInput>("/", async (HttpContext context, UserInput userInput) =>
+            app.AppPost("/bbq", (HttpContext context, UserInput userInput) =>
                 {
                     var user = context.User;
 
-                    return $"Hello {(user.GetClaim(Claims.Subject) ?? "lady gaga")} from Carter!";
+                    return TypedResults.BadRequest(userInput);
+
+                    //            return $"Hello {(user.GetClaim(Claims.Subject) ?? "lady gaga")} from Carter!";
                 }).WithTags("Home 嘿嘿嘿嘿")
                 .WithMetadata("meta---- 哈哈哈哈");
 
@@ -88,9 +75,29 @@ namespace DaprIdentity.Modules
 
     public static class EndpointRouteBuilderExtends
     {
-        public static RouteHandlerBuilder Get(this IEndpointRouteBuilder app, string pattern, Delegate handle)
+        public static RouteHandlerBuilder AppGet(this IEndpointRouteBuilder app, string pattern, Delegate handle)
         {
             return app.MapGet(pattern, handle).RequireAuthorization();
+        }
+
+        public static RouteHandlerBuilder AppPost(this IEndpointRouteBuilder app, string pattern, Delegate handle)
+        {
+            return app.MapPost(pattern, handle).RequireAuthorization();
+        }
+
+        public static RouteHandlerBuilder AppDelete(this IEndpointRouteBuilder app, string pattern, Delegate handle)
+        {
+            return app.MapDelete(pattern, handle).RequireAuthorization();
+        }
+
+        public static RouteHandlerBuilder AppPatch(this IEndpointRouteBuilder app, string pattern, Delegate handle)
+        {
+            return app.MapPatch(pattern, handle).RequireAuthorization();
+        }
+
+        public static RouteHandlerBuilder AppPut(this IEndpointRouteBuilder app, string pattern, Delegate handle)
+        {
+            return app.MapPut(pattern, handle).RequireAuthorization();
         }
     }
 }

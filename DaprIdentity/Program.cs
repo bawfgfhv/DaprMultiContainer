@@ -1,27 +1,26 @@
-﻿using Carter;
+﻿using System.Collections.Immutable;
+using Carter;
+using DaprIdentity.Authorization;
 using DaprIdentity.Data;
-using DaprIdentity.IntegrationEvents;
 using DaprIdentity.Modules;
-using Google.Api;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
 using Microsoft.eShopOnDapr.BuildingBlocks.EventBus;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
+using OpenIddict.Server;
 using OpenIddict.Server.AspNetCore;
+using OpenIddict.Validation.AspNetCore;
 using Quartz;
-using System.Configuration;
 using System.Globalization;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using Microsoft.AspNetCore.Authorization;
-using OpenIddict.Validation.AspNetCore;
-using Microsoft.AspNetCore.Identity;
-using OpenIddict.Server;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
+using Permissions = OpenIddict.Abstractions.OpenIddictConstants.Permissions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +35,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDaprClient();
 builder.Services.AddScoped<IDatabase, Database>();
 builder.Services.AddScoped<IEventBus, DaprEventBus>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCarter();
 #endregion
@@ -129,8 +129,18 @@ builder.Services.AddOpenIddict()
                 //}
 
                 // 验证成功，创建和签发access token
-                var identity = new ClaimsIdentity(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, Claims.Name, Claims.Role);
-                identity.AddClaim(Claims.Subject, username.ToString());
+                var identity = new ClaimsIdentity(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme,
+                    Claims.Name, Claims.Role);
+                identity.AddClaim(Claims.Subject, username.ToString())
+
+                    .SetClaim(OpenIddictConstants.Claims.Email, "jack@qq.com")
+                    .SetClaim(OpenIddictConstants.Claims.Name, "杰克")
+                    .SetClaims(OpenIddictConstants.Claims.Role,
+                        ImmutableArray.Create<string>("Administrators", "Teachers", "Students"));
+
+                //此除应与应用分配一致
+                identity.SetScopes(context.Request.GetScopes());
+
                 var principal = new ClaimsPrincipal(identity);
                 context.SignIn(principal);
                 return default;
@@ -158,32 +168,13 @@ builder.Services
         options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
     });
+builder.Services.AddScoped<UserStore>();
 
-#region 模型验证器
-
-// 注册模型验证器
-//builder.Services.Configure<ApiBehaviorOptions>(options =>
-//{
-//    options.InvalidModelStateResponseFactory = context =>
-//    {
-//        var errors = new List<string>();
-//        foreach (var modelState in context.ModelState.Values)
-//        {
-//            foreach (var error in modelState.Errors)
-//            {
-//                errors.Add(error.ErrorMessage);
-//            }
-//        }
-//​
-//        return new BadRequestObjectResult(errors);
-//    };
-//});
-
-
-#endregion
-
+builder.Services.ConfigureHttpJsonOptions(opt =>
+{
+    opt.SerializerOptions.ReferenceHandler= ReferenceHandler.IgnoreCycles;
+});
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -329,78 +320,10 @@ await using (var scope = app.Services.CreateAsyncScope())
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseAuthorizationMiddleware();
 #endregion
 
 app.MapCarter();
-
-#region Zirku.Server
-app.MapGet("api", [Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-(ClaimsPrincipal user) => user.Identity!.Name);
-
-app.MapMethods("api/connect/authorize", [HttpMethods.Get, HttpMethods.Post], async (HttpContext context, IOpenIddictScopeManager manager) =>
-{
-    // Retrieve the OpenIddict server request from the HTTP context.
-    var request = context.GetOpenIddictServerRequest();
-
-    var identifier = (int?)request["hardcoded_identity_id"];
-    if (identifier is not (1 or 2))
-    {
-        return Results.Challenge(
-            authenticationSchemes: [OpenIddictServerAspNetCoreDefaults.AuthenticationScheme],
-            properties: new AuthenticationProperties(new Dictionary<string, string>
-            {
-                [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidRequest,
-                [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The specified hardcoded identity is invalid."
-            }!));
-    }
-
-    // Create the claims-based identity that will be used by OpenIddict to generate tokens.
-    var identity = new ClaimsIdentity(
-        authenticationType: TokenValidationParameters.DefaultAuthenticationType,
-        nameType: Claims.Name,
-        roleType: Claims.Role);
-
-    // Add the claims that will be persisted in the tokens.
-    identity.AddClaim(new Claim(Claims.Subject, identifier.Value.ToString(CultureInfo.InvariantCulture)));
-    identity.AddClaim(new Claim(Claims.Name, identifier switch
-    {
-        1 => "Alice",
-        2 => "Bob",
-        _ => throw new InvalidOperationException()
-    }));
-    identity.AddClaim(new Claim(Claims.PreferredUsername, identifier switch
-    {
-        1 => "Alice",
-        2 => "Bob",
-        _ => throw new InvalidOperationException()
-    }));
-
-    // Note: in this sample, the client is granted all the requested scopes for the first identity (Alice)
-    // but for the second one (Bob), only the "api1" scope can be granted, which will cause requests sent
-    // to Zirku.Api2 on behalf of Bob to be automatically rejected by the OpenIddict validation handler,
-    // as the access token representing Bob won't contain the "resource_server_2" audience required by Api2.
-    identity.SetScopes(identifier switch
-    {
-        1 => request.GetScopes(),
-        2 => new[] { "api1" }.Intersect(request.GetScopes()),
-        _ => throw new InvalidOperationException()
-    });
-
-    identity.SetResources(await manager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
-
-    // Allow all claims to be added in the access tokens.
-    identity.SetDestinations(claim => [Destinations.AccessToken]);
-
-    //var result = Results.SignIn(new ClaimsPrincipal(identity), properties: null, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-
-    var result = TypedResults.SignIn(new ClaimsPrincipal(identity), properties: null,
-        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-
-
-    return result;
-});
-
-#endregion
-
 
 app.Run();
