@@ -1,4 +1,4 @@
-using Carter;
+ï»¿using Carter;
 using DaprIdentity.Data;
 using DaprIdentity.IntegrationEvents;
 using DaprIdentity.Modules;
@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.Authorization;
 using OpenIddict.Validation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using OpenIddict.Server;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,7 +100,7 @@ builder.Services.AddOpenIddict()
         {
             builder.UseInlineHandler(context =>
             {
-                // ¼ì²éÇëÇóÊÇ·ñ°üº¬±ØÒªµÄ²ÎÊı£¨grant_type¡¢username¡¢password£©
+                // æ£€æŸ¥è¯·æ±‚æ˜¯å¦åŒ…å«å¿…è¦çš„å‚æ•°ï¼ˆgrant_typeã€usernameã€passwordï¼‰
                 if (!context.Request.IsPasswordGrantType() ||
                     !context.Request.HasParameter("username") ||
                     !context.Request.HasParameter("password"))
@@ -110,35 +112,27 @@ builder.Services.AddOpenIddict()
                     return default;
                 }
 
-                // »ñÈ¡ÓÃ»§ÃûºÍÃÜÂë
+                // è·å–ç”¨æˆ·åå’Œå¯†ç 
                 var username = context.Request.GetParameter("username");
                 var password = context.Request.GetParameter("password");
 
-                // Ê¹ÓÃASP.NET Core IdentityÑéÖ¤ÓÃ»§ÃûºÍÃÜÂë
+                // ä½¿ç”¨ASP.NET Core IdentityéªŒè¯ç”¨æˆ·åå’Œå¯†ç 
                 //var result = await _signInManager.PasswordSignInAsync(username, password, false, lockoutOnFailure: false);
 
                 //if (!result.Succeeded)
                 //{
-                    //context.Reject(
-                    //    error: Errors.InvalidGrant,
-                    //    description: "The username or password is incorrect.");
+                //context.Reject(
+                //    error: Errors.InvalidGrant,
+                //    description: "The username or password is incorrect.");
 
-                    //return default;
+                //return default;
                 //}
 
-                // ÑéÖ¤³É¹¦£¬´´½¨ºÍÇ©·¢access token
+                // éªŒè¯æˆåŠŸï¼Œåˆ›å»ºå’Œç­¾å‘access token
                 var identity = new ClaimsIdentity(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, Claims.Name, Claims.Role);
                 identity.AddClaim(Claims.Subject, username.ToString());
-
                 var principal = new ClaimsPrincipal(identity);
-
-                //var ticket = new AuthenticationTicket(principal, properties: null, OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-
                 context.SignIn(principal);
-
-                //context.Validate(ticket);
-                
-
                 return default;
             });
         });
@@ -157,8 +151,36 @@ builder.Services.AddOpenIddict()
 #endregion
 
 builder.Services.AddCors();
-builder.Services.AddAuthorization()
-    .AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+builder.Services
+    .AddAuthorization()
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+    });
+
+#region æ¨¡å‹éªŒè¯å™¨
+
+// æ³¨å†Œæ¨¡å‹éªŒè¯å™¨
+//builder.Services.Configure<ApiBehaviorOptions>(options =>
+//{
+//    options.InvalidModelStateResponseFactory = context =>
+//    {
+//        var errors = new List<string>();
+//        foreach (var modelState in context.ModelState.Values)
+//        {
+//            foreach (var error in modelState.Errors)
+//            {
+//                errors.Add(error.ErrorMessage);
+//            }
+//        }
+//â€‹
+//        return new BadRequestObjectResult(errors);
+//    };
+//});
+
+
+#endregion
 
 var app = builder.Build();
 
@@ -172,7 +194,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-// ¶©ÔÄÏûÏ¢
+// è®¢é˜…æ¶ˆæ¯
 app.UseCloudEvents();
 app.MapSubscribeHandler();
 
