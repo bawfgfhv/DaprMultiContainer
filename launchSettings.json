@@ -18,8 +18,7 @@
         "daprsubdemo-dapr": "StartWithoutDebugging",
         "identity-dapr": "StartWithoutDebugging",
         "dapridentity": "StartDebugging",
-        "dapridentity-dapr": "StartWithoutDebugging",
-        "identity-database": "StartWithoutDebugging"
+        "dapridentity-dapr": "StartWithoutDebugging"
       }
     }
   }

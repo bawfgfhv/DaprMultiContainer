@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using OpenIddict.Validation.AspNetCore;
 
 namespace DaprIdentity.Authorization;
@@ -16,7 +17,12 @@ public class AuthorizationMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var isAuthorized = context.User.Identity.IsAuthenticated;
+        var endpoint = context.GetEndpoint();
+
+        bool allowsAnonymous = endpoint != null && endpoint.Metadata.Any(
+            meta => meta is AllowAnonymousAttribute);
+
+        var isAuthorized = allowsAnonymous || (context.User.Identity?.IsAuthenticated ?? false);
 
         if (!isAuthorized)
         {
@@ -27,7 +33,7 @@ public class AuthorizationMiddleware
 
         var userStore = context.RequestServices.GetService<UserStore>()!;
 
-        if (!userStore.CheckPermission(2, context.Request.Path))
+        if (!allowsAnonymous && !userStore.CheckPermission(2, context.Request.Path))
         {
             await context.ForbidAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
             return;

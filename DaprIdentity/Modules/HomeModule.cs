@@ -24,7 +24,8 @@ namespace DaprIdentity.Modules
 
                     //            return $"Hello {(user.GetClaim(Claims.Subject) ?? "lady gaga")} from Carter!";
                 }).WithTags("Home 嘿嘿嘿嘿")
-                .WithMetadata("meta---- 哈哈哈哈");
+                .WithMetadata("meta---- 哈哈哈哈")
+                .AllowAnonymous();
 
 
             app.MapGet("/qs", (HttpRequest req) =>
