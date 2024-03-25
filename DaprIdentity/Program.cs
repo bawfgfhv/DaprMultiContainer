@@ -1,12 +1,14 @@
 ﻿using Carter;
 using DaprIdentity.Authorization;
 using DaprIdentity.Data;
+using DaprIdentity.Extensions;
 using DaprIdentity.Modules;
 using DaprIdentity.OpenIddict;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
 using Microsoft.eShopOnDapr.BuildingBlocks.EventBus;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
@@ -22,11 +24,31 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 #region Services
+
+builder.Services.AddLocalization();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new List<CultureInfo>
+    {
+        new CultureInfo("en-us"),
+        new CultureInfo("zh-cn")
+    };
+
+    options.DefaultRequestCulture = new RequestCulture(culture: "zh-cn", uiCulture: "zh-cn");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders = new IRequestCultureProvider[]
+        { new  RouteDataRequestCultureProvider { IndexOfCulture = 1, IndexofUiCulture = 1 } };
+});
+
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.ConstraintMap.Add("culture", typeof(LanguageRouteConstraint));
+});
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources"); //本地化
 builder.Services.AddSwaggerGen();
 builder.Services.AddDaprClient();
 builder.Services.AddScoped<IDatabase, Database>();
@@ -127,17 +149,8 @@ builder.Services.ConfigureHttpJsonOptions(opt =>
 var app = builder.Build();
 
 #region 本地化
-IList<CultureInfo> supportedCultures = new List<CultureInfo>
-{
-    new CultureInfo("en-US"),
-    new CultureInfo("zh-CN"),
-};
-app.UseRequestLocalization(new RequestLocalizationOptions
-{
-    DefaultRequestCulture = new RequestCulture("en-US"),
-    SupportedCultures = supportedCultures,
-    SupportedUICultures = supportedCultures
-});
+var localizeOptions = app.Services.GetService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(localizeOptions.Value);
 #endregion
 
 
