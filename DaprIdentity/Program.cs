@@ -1,28 +1,21 @@
-﻿using System.Collections.Immutable;
-using Carter;
+﻿using Carter;
 using DaprIdentity.Authorization;
 using DaprIdentity.Data;
 using DaprIdentity.Modules;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
+using DaprIdentity.OpenIddict;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
 using Microsoft.eShopOnDapr.BuildingBlocks.EventBus;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
-using OpenIddict.Server;
-using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using Quartz;
 using System.Globalization;
-using System.Security.Claims;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using DaprIdentity.OpenIddict;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using Permissions = OpenIddict.Abstractions.OpenIddictConstants.Permissions;
 using static OpenIddict.Server.OpenIddictServerEvents;
+using Permissions = OpenIddict.Abstractions.OpenIddictConstants.Permissions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,11 +26,13 @@ var configuration = builder.Configuration;
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources"); //本地化
 builder.Services.AddSwaggerGen();
 builder.Services.AddDaprClient();
 builder.Services.AddScoped<IDatabase, Database>();
 builder.Services.AddScoped<IEventBus, DaprEventBus>();
 builder.Services.AddHttpContextAccessor();
+
 
 builder.Services.AddCarter();
 #endregion
@@ -128,7 +123,23 @@ builder.Services.ConfigureHttpJsonOptions(opt =>
 {
     opt.SerializerOptions.ReferenceHandler= ReferenceHandler.IgnoreCycles;
 });
+
 var app = builder.Build();
+
+#region 本地化
+IList<CultureInfo> supportedCultures = new List<CultureInfo>
+{
+    new CultureInfo("en-US"),
+    new CultureInfo("zh-CN"),
+};
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en-US"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+#endregion
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

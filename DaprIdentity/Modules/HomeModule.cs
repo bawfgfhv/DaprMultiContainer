@@ -4,6 +4,7 @@ using Carter.Request;
 using Carter.Response;
 using DaprIdentity.Authorization;
 using DaprIdentity.Modules.User;
+using Microsoft.Extensions.Localization;
 
 namespace DaprIdentity.Modules
 {
@@ -11,10 +12,10 @@ namespace DaprIdentity.Modules
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.AppGet(Permissions.UserCreate, (HttpContext context) =>
+            app.AppGet(Apis.UserCreate.Path, (HttpContext context, IStringLocalizer<HomeModule> localizer) =>
             {
-                return TypedResults.Ok(context.User);
-            });
+                return TypedResults.Ok(localizer.GetString("Greeting"));
+            }).AllowAnonymous();
 
             app.AppPost("/bbq", (HttpContext context, UserInput userInput) =>
                 {

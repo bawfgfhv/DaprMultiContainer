@@ -139,16 +139,16 @@ services:
       ]
     depends_on:
       - dapridentity
-      # - identity-database
+      - identity-database
     network_mode: "service:dapridentity"
     volumes:
       - "./dapr/components/:/components"
 
-  # identity-database:
-  #   container_name: mssql
-  #   image: mcr.microsoft.com/mssql/server:2019-latest
-  #   ports:
-  #   - "1433:1433"
-  #   environment:
-  #   - SA_PASSWORD=longchi@123
-  #   - ACCEPT_EULA=Y
+  identity-database:
+    container_name: mssql
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+    - "1433:1433"
+    environment:
+    - SA_PASSWORD=longchi@123
+    - ACCEPT_EULA=Y
