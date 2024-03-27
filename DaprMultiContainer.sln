@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DaprSubDemo", "DaprSubDemo\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity", "Identity\Identity.csproj", "{D3A58271-7FE0-4899-87C8-CED530BD984E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaprIdentity", "DaprIdentity\DaprIdentity.csproj", "{9F929840-DBE3-42B9-8736-4C4420B535D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DaprIdentity", "DaprIdentity\DaprIdentity.csproj", "{9F929840-DBE3-42B9-8736-4C4420B535D9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yarp.Gateways", "Yarp.ReverseProxy\Yarp.Gateways.csproj", "{90D960D7-ED47-4CC4-9046-164D9B6580C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{9F929840-DBE3-42B9-8736-4C4420B535D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F929840-DBE3-42B9-8736-4C4420B535D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F929840-DBE3-42B9-8736-4C4420B535D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90D960D7-ED47-4CC4-9046-164D9B6580C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90D960D7-ED47-4CC4-9046-164D9B6580C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90D960D7-ED47-4CC4-9046-164D9B6580C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90D960D7-ED47-4CC4-9046-164D9B6580C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
