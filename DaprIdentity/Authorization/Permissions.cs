@@ -10,6 +10,9 @@ static class Permissions
 
     public const string Role = "Role";
     public const string RoleRead = "Role.Read";
+
+    public const string Todo = "Todo";
+    public const string TodoCreate = "Todo/Create";
 }
 
 public class Apis
