@@ -169,7 +169,10 @@ app.MapSubscribeHandler();
 
 #region UserOpenIddict
 
-app.UseCors(b => b.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:5112"));
+app.UseCors(b =>
+    b.AllowAnyHeader()
+        .AllowAnyMethod()
+        .WithOrigins("http://192.168.1.10:5112", "http://192.168.1.10:5113"));
 app.UseHttpsRedirection();
 
 // Create new application registrations matching the values configured in Zirku.Client1 and Zirku.Api1.
@@ -195,7 +198,7 @@ await using (var scope = app.Services.CreateAsyncScope())
                 ClientType = ClientTypes.Public,
                 RedirectUris =
                 {
-                    new Uri("http://localhost:5112/")
+                    new Uri("http://192.168.1.10:5112/")
                 },
                 Permissions =
                 {
@@ -224,9 +227,9 @@ await using (var scope = app.Services.CreateAsyncScope())
                 ClientType = ClientTypes.Public,
                 RedirectUris =
                 {
-                    new Uri("http://localhost:5112/index.html"),
-                    new Uri("http://localhost:5112/signin-callback.html"),
-                    new Uri("http://localhost:5112/signin-silent-callback.html"),
+                    new Uri("http://192.168.1.10:5112/index.html"),
+                    new Uri("http://192.168.1.10:5112/signin-callback.html"),
+                    new Uri("http://192.168.1.10:5112/signin-silent-callback.html"),
                 },
                 Permissions =
                 {
@@ -296,10 +299,10 @@ await using (var scope = app.Services.CreateAsyncScope())
     }
 }
 
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
-app.UseAuthorizationMiddleware();
+//app.UseAuthorizationMiddleware();
 #endregion
 
 app.MapCarter();

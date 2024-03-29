@@ -1,6 +1,4 @@
-﻿using OpenIddict.Abstractions;
-
-namespace DaprIdentity.Authorization
+﻿namespace Yarp.Gateways.Authorization
 {
     public class UserStore
     {

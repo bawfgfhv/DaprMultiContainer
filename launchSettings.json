@@ -18,7 +18,8 @@
         "daprsubdemo-dapr": "StartWithoutDebugging",
         "identity-dapr": "StartWithoutDebugging",
         "dapridentity": "StartDebugging",
-        "dapridentity-dapr": "StartWithoutDebugging"
+        "dapridentity-dapr": "StartWithoutDebugging",
+        "yarp.gateways": "StartDebugging"
       }
     }
   }

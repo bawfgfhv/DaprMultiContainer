@@ -54,7 +54,8 @@ namespace DaprIdentity.Authorization
             var user = Users.Find(x => x.Id == userId);
             if (user == null) return false;
 
-            return user.Permissions.Any(p => permissionName.AsSpan(1).StartsWith(p.PermissionName,StringComparison.OrdinalIgnoreCase));
+            return user.Permissions.Any(p =>
+                permissionName.AsSpan(1).StartsWith(p.PermissionName, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

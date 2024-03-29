@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Net;
+using System.Text.RegularExpressions;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder;
 
@@ -8,40 +10,55 @@ namespace Yarp.Gateways
     {
         public void Apply(TransformBuilderContext context)
         {
-            if (context.Route.RouteId == DaprConfigUtils.DaprUserApiRouteId ||
-                context.Route.RouteId == DaprConfigUtils.DaprOssApiRouteId)
+            var appId = context.Route.RouteId;
+            if (appId == DaprConfigUtils.Auth || appId == DaprConfigUtils.Oss)
             {
-                context.AddRequestTransform((transformContext) =>
+                switch (context.Route.RouteId)
                 {
-                    var path = transformContext.Path.Value ?? string.Empty;
-                    if (Regex.IsMatch(path, @"^/app/"))
-                    {
-                        var index = path.IndexOf("/api/", StringComparison.Ordinal);
-                        if (index != -1)
+                    case DaprConfigUtils.Auth:
+                        context.AddRequestTransform(transformContext =>
                         {
-                            var appId = path.Substring(5, index - 5);
-                            var newPath = path.Substring(index);
-                            if (!string.IsNullOrEmpty(appId) && !string.IsNullOrEmpty(newPath))
-                            {
-                                string urlString = string.Empty;
-                                    
-                                if (transformContext.Query.QueryString.HasValue)
-                                {
-                                    urlString= $"{transformContext.DestinationPrefix}/v1.0/invoke/{appId}/method{newPath}{transformContext.Query?.QueryString}";
-                                }
-                                else
-                                {
-                                    urlString = $"{transformContext.DestinationPrefix}/v1.0/invoke/{appId}/method{newPath}";
-                                }
-                                transformContext.ProxyRequest.RequestUri = new Uri(urlString);
-                                
-                                return ValueTask.CompletedTask;
-                            }
-                        }
-                    }
+                            var newPath =
+                                transformContext.Path.Value?.AsSpan(DaprConfigUtils.Auth.Length + 1).ToString() ??
+                                string.Empty;
+                            var urlString = transformContext.Query.QueryString.HasValue
+                                ? $"{transformContext.DestinationPrefix}/v1.0/invoke/{appId}/method{newPath}{transformContext.Query?.QueryString}"
+                                : $"{transformContext.DestinationPrefix}/v1.0/invoke/{appId}/method{newPath}";
+                            transformContext.ProxyRequest.RequestUri = new Uri(urlString);
 
-                    return ValueTask.FromException(new Exception($"路径错误,必须格式/app/appid/*,实际:{transformContext.Path}"));
-                });
+
+                            return ValueTask.CompletedTask;
+                        });
+                        break;
+                    case DaprConfigUtils.Oss:
+                        context.AddRequestTransform(transformContext =>
+                        {
+                            return ValueTask.CompletedTask;
+                        });
+                        break;
+                }
+
+
+                //context.AddRequestTransform((transformContext) =>
+                //{
+                //    var appId = transformContext.DestinationPrefix;
+                //    var newPath = transformContext.Path.Value ?? string.Empty;
+
+
+                //    if (!string.IsNullOrEmpty(appId) && !string.IsNullOrEmpty(newPath))
+                //    {
+                //        var urlString = transformContext.Query.QueryString.HasValue
+                //            ? $"{transformContext.DestinationPrefix}/v1.0/invoke/{appId}/method{newPath}{transformContext.Query?.QueryString}"
+                //            : $"{transformContext.DestinationPrefix}/v1.0/invoke/{appId}/method{newPath}";
+                //        transformContext.ProxyRequest.RequestUri = new Uri(urlString);
+
+                //        return ValueTask.CompletedTask;
+                //    }
+
+                //    transformContext.HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                //    transformContext.HttpContext.Response.WriteAsJsonAsync($"你所访问的路径:{transformContext.Path},不存在！");
+                //    return ValueTask.CompletedTask;
+                //});
             }
         }
 

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using OpenIddict.Validation.AspNetCore;
 
-namespace DaprIdentity.Authorization;
+namespace Yarp.Gateways.Authorization;
 
 public class AuthorizationMiddleware
 {
@@ -34,11 +34,11 @@ public class AuthorizationMiddleware
 
         var userStore = context.RequestServices.GetService<UserStore>()!;
 
-        if (!allowsAnonymous && !userStore.CheckPermission(2, context.Request.Path))
-        {
-            await context.ForbidAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-            return;
-        }
+        //if (!allowsAnonymous && !userStore.CheckPermission(2, context.Request.Path))
+        //{
+        //    await context.ForbidAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        //    return;
+        //}
 
         // 如果授权成功，继续请求管道的下一个中间件
         await _next(context);

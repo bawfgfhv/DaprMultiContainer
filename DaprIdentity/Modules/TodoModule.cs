@@ -1,8 +1,11 @@
 ﻿using Carter;
 using Dapr.Client;
 using DaprIdentity.IntegrationEvents;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.eShopOnContainers.BuildingBlocks.EventBus.Abstractions;
+using OpenIddict.Validation.AspNetCore;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace DaprIdentity.Modules
 {
@@ -21,8 +24,12 @@ namespace DaprIdentity.Modules
                 .WithTags("TodoGroup");
 
 
-            app.MapPost("/todo/create", async ([FromBody] TodoItem item, IEventBus eventBus, DaprClient daprClient) =>
+            app.MapPost("/todo/create", async (HttpContext context , [FromBody] TodoItem item, IEventBus eventBus, DaprClient daprClient) =>
             {
+               var user = context.User;
+
+               var x2 = context.GetTokenAsync(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, Destinations.AccessToken);
+
                 await eventBus.PublishAsync(
                     new OrderStatusChangedToSubmittedIntegrationEvent(Guid.NewGuid(), "付款了", "bawfgfhv@qq.com"));
 

@@ -1,4 +1,4 @@
-﻿namespace DaprIdentity.Authorization;
+﻿namespace Yarp.Gateways.Authorization;
 
 static class Permissions
 {

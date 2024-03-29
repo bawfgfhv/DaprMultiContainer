@@ -51,8 +51,12 @@ namespace DaprIdentity.OpenIddict
                 .SetClaims(OpenIddictConstants.Claims.Role,
                     ImmutableArray.Create<string>("Administrators", "Teachers", "Students"));
 
+            var scopes = context.Request.GetScopes();
+
             //此除应与应用分配一致
-            identity.SetScopes(context.Request.GetScopes());
+            identity.SetScopes(scopes);
+
+            identity.SetAudiences("resource_server_1");
 
             var principal = new ClaimsPrincipal(identity);
             context.SignIn(principal);

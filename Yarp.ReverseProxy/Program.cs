@@ -1,8 +1,7 @@
-using DaprIdentity.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Validation.AspNetCore;
 using Yarp.Gateways;
-using static OpenIddict.Abstractions.OpenIddictConstants;
+using Yarp.Gateways.Authorization;
 
 
 const string corsPolicy = nameof(corsPolicy);
@@ -14,7 +13,7 @@ builder.AddYarpProxy();
 builder.Services.AddOpenIddict()
     .AddValidation(options =>
     {
-        options.SetIssuer("http://localhost:5112");
+        options.SetIssuer("http://192.168.1.10:5112");
         options.AddAudiences("resource_server_1");
 
         options.UseIntrospection()

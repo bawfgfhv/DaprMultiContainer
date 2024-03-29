@@ -1,11 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using System.Collections.Generic;
-using System;
-using System.Collections.ObjectModel;
-using Microsoft.Extensions.DependencyInjection;
-using Yarp.Gateways;
-using Yarp.ReverseProxy.Configuration;
-using Microsoft.AspNetCore.Authorization;
+﻿using Yarp.ReverseProxy.Configuration;
 
 namespace Yarp.Gateways
 {
@@ -22,32 +15,31 @@ namespace Yarp.Gateways
 
     public partial class DaprConfigUtils
     {
-        public const string DaprUserApiRouteId = "dapr-user-service";
-        public const string UserClusterId = "dapr-user";
-        public const string DaprOssApiRouteId = "dapr-oss-service";
-        public const string OssClusterId = "dapr-oss";
-        public const string DaprApiStartBy = "/app/";
+        public const string Auth = "DaprIdentity";
+        public const string AuthClusterId = nameof(AuthClusterId);
+        public const string Oss = nameof(Oss);
+        public const string OssClusterId = nameof(OssClusterId);
 
         public static RouteConfig[] Routes => new[]
         {
             new RouteConfig()
             {
-                RouteId = DaprUserApiRouteId,
-                ClusterId = UserClusterId,
+                RouteId = Auth,
+                ClusterId = AuthClusterId,
                 AuthorizationPolicy = "anonymous",
                 Match = new RouteMatch
                 {
-                    Path = DaprApiStartBy + "auth/{**catch-all}"
+                    Path = "/DaprIdentity/{**catch-all}"
                 }
-            },         
+            },
             new RouteConfig()
             {
-                RouteId = DaprOssApiRouteId,
+                RouteId = Oss,
                 ClusterId = OssClusterId,
                 //AuthorizationPolicy = "anonymous",
                 Match = new RouteMatch
                 {
-                    Path = DaprApiStartBy + "oss/{**catch-all}"
+                    Path = "/oss/{**catch-all}"
                 }
             }
         };
@@ -56,7 +48,7 @@ namespace Yarp.Gateways
         {
             new ClusterConfig()
             {
-                ClusterId = UserClusterId,
+                ClusterId = AuthClusterId,
                 Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "auth", new DestinationConfig() { Address = "http://127.0.0.1:3500" } },
