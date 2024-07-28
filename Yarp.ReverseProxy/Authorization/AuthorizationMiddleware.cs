@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using DaprIdentity.Authorization;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using OpenIddict.Validation.AspNetCore;
 
@@ -28,11 +29,11 @@ public class AuthorizationMiddleware
         if (!isAuthorized)
         {
             // 如果未授权，返回未授权的响应
-            context.Response.StatusCode = 401; // Unauthorized
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized; // Unauthorized 
             return;
         }
 
-        var userStore = context.RequestServices.GetService<UserStore>()!;
+        //var userStore = context.RequestServices.GetService<UserStore>()!;
 
         //if (!allowsAnonymous && !userStore.CheckPermission(2, context.Request.Path))
         //{

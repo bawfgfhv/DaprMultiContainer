@@ -58,6 +58,8 @@ namespace DaprIdentity.OpenIddict
 
             identity.SetAudiences("resource_server_1");
 
+            identity.SetAudiences("resource_server_1");
+
             var principal = new ClaimsPrincipal(identity);
             context.SignIn(principal);
             return default;
